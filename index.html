@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For Thamizh</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night-deep:#180f2e;
+    --night-mid:#3a1f5c;
+    --gold:#f0c869;
+    --coral:#ff8b6b;
+    --thread:#ef5da8;
+    --cream:#fdf6ec;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; min-height:100%;
+    background:radial-gradient(ellipse at 30% 20%, var(--night-mid), var(--night-deep) 70%);
+    font-family:'Quicksand', sans-serif;
+    color:var(--cream);
+    overflow:hidden;
+  }
+  .sky{position:fixed; inset:0; overflow:hidden; z-index:0;}
+  .firefly{
+    position:absolute; width:4px; height:4px;
+    background:var(--gold); border-radius:50%;
+    box-shadow:0 0 8px 2px rgba(240,200,105,.8);
+    animation:drift linear infinite; opacity:.8;
+  }
+  @keyframes drift{
+    0%{transform:translateY(0) translateX(0); opacity:0;}
+    10%{opacity:.9;} 50%{transform:translateY(-40vh) translateX(20px);}
+    90%{opacity:.7;} 100%{transform:translateY(-90vh) translateX(-10px); opacity:0;}
+  }
+
+  .app{ position:relative; z-index:2; height:100vh; }
+
+  .scene{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; text-align:center;
+    opacity:0; pointer-events:none;
+    transform:scale(.94);
+    transition:opacity .55s ease, transform .55s ease;
+    overflow-y:auto;
+  }
+  .scene.active{ opacity:1; pointer-events:auto; transform:scale(1); }
+
+  .eyebrow{ font-size:.75rem; letter-spacing:3px; text-transform:uppercase; color:rgba(253,246,236,.55); margin-bottom:10px; }
+  .headline{
+    font-family:'Caveat', cursive; font-weight:700;
+    font-size:clamp(2rem,6vw,3.2rem); color:var(--gold);
+    margin:0 0 10px 0; text-shadow:0 0 18px rgba(240,200,105,.35);
+  }
+  .sub{ max-width:440px; line-height:1.5; color:rgba(253,246,236,.85); margin-bottom:24px; font-size:.98rem; }
+
+  .btn{
+    background:rgba(253,246,236,.08);
+    border:1px solid rgba(240,200,105,.5);
+    color:var(--cream); padding:12px 28px; border-radius:999px;
+    font-family:'Quicksand', sans-serif; font-size:.95rem; font-weight:600;
+    cursor:pointer; transition:background .2s, transform .2s;
+  }
+  .btn:hover{ background:rgba(240,200,105,.22); transform:translateY(-2px); }
+  .btn:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+  .btn.ghost{ background:transparent; border-color:rgba(253,246,236,.25); }
+
+  .dots{ display:flex; gap:8px; margin-top:24px; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:rgba(253,246,236,.25); transition:background .3s, width .3s; }
+  .dot.on{ background:var(--gold); width:20px; border-radius:5px; }
+
+  /* heart meter */
+  .heart-btn{
+    font-size:4.2rem; cursor:pointer; user-select:none;
+    filter:drop-shadow(0 0 12px rgba(239,93,168,.4));
+    animation:pulse 1.6s ease-in-out infinite;
+    transition:transform .12s;
+  }
+  .heart-btn:active{ transform:scale(1.3); }
+  @keyframes pulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+  .meter-track{
+    width:min(320px,80vw); height:12px; border-radius:999px;
+    background:rgba(253,246,236,.12); margin:22px 0 6px; overflow:hidden;
+    border:1px solid rgba(240,200,105,.25);
+  }
+  .meter-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--thread), var(--coral), var(--gold));
+    transition:width .25s ease;
+  }
+  .meter-label{ font-size:.78rem; color:rgba(253,246,236,.6); margin-bottom:20px; }
+
+  /* through the years */
+  .years-strip{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:22px; }
+  .years-card{
+    width:110px; text-align:center;
+  }
+  .years-card img{
+    width:110px; height:110px; object-fit:cover; border-radius:12px;
+    border:2px solid rgba(240,200,105,.4);
+    box-shadow:0 10px 20px rgba(0,0,0,.4);
+  }
+  .years-card span{ display:block; margin-top:8px; font-size:.72rem; letter-spacing:1px; text-transform:uppercase; color:rgba(253,246,236,.55); }
+
+  /* chips */
+  .chips{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:420px; margin-bottom:24px; }
+  .chip{
+    padding:10px 16px; border-radius:999px; cursor:pointer;
+    border:1px solid rgba(253,246,236,.25); background:rgba(253,246,236,.05);
+    font-size:.88rem; transition:all .2s;
+  }
+  .chip.picked{ background:var(--thread); border-color:var(--thread); color:#2a1030; font-weight:600; }
+
+  /* redirect overlay */
+  .redirect{
+    position:fixed; inset:0; z-index:10;
+    background:var(--night-deep);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .35s ease;
+  }
+  .redirect.show{ opacity:1; pointer-events:auto; }
+  .redirect .url{ font-size:.8rem; color:rgba(253,246,236,.5); margin-bottom:18px; letter-spacing:.5px; font-family:monospace; }
+  .spinner{ width:34px; height:34px; border-radius:50%; border:3px solid rgba(240,200,105,.2); border-top-color:var(--gold); animation:spin .8s linear infinite; margin-bottom:14px; }
+  @keyframes spin{ to{ transform:rotate(360deg);} }
+  .redirect-text{ font-size:.85rem; color:rgba(253,246,236,.65); }
+
+  /* final card */
+  .card-wrap{ width:min(320px,82vw); aspect-ratio:3/4.1; transform-style:preserve-3d; transition:transform .15s ease-out; cursor:pointer; }
+  .card{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .9s cubic-bezier(.2,.9,.25,1); }
+  .card.flipped{ transform:rotateY(180deg); }
+  .face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:18px; display:flex; flex-direction:column; align-items:center; box-shadow:0 25px 50px -12px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05); }
+  .front{ background:repeating-linear-gradient(45deg, var(--thread) 0 6px, var(--coral) 6px 12px, var(--gold) 12px 18px) padding-box; padding:14px; }
+  .polaroid{ background:var(--cream); border-radius:8px; width:100%; height:100%; padding:14px 14px 56px 14px; display:flex; flex-direction:column; align-items:center; position:relative; }
+  .photo-frame{ width:100%; flex:1; background:linear-gradient(135deg,#f1e4d0,#e6d3b8); border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .photo-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .tape{ position:absolute; width:56px; height:20px; background:rgba(240,200,105,.55); top:-8px; left:50%; transform:translateX(-50%) rotate(-3deg); box-shadow:0 2px 4px rgba(0,0,0,.2); }
+  .caption{ font-family:'Caveat', cursive; font-size:1.4rem; color:#3a1f5c; margin-top:8px; }
+  .charm{ position:absolute; bottom:-14px; right:22px; font-size:1.3rem; transform-origin:top center; animation:swing 2.6s ease-in-out infinite; }
+  @keyframes swing{ 0%,100%{transform:rotate(-8deg);} 50%{transform:rotate(8deg);} }
+  .back{ background:linear-gradient(160deg,#2a1650,#4a2472 60%,#6b2d6e); transform:rotateY(180deg); padding:24px 20px 18px; justify-content:flex-start; overflow-y:auto; }
+  .msg-title{ font-family:'Caveat', cursive; font-size:1.7rem; color:var(--gold); margin:6px 0 8px 0; }
+  .message{ font-size:.9rem; line-height:1.5; color:var(--cream); text-align:center; outline:none; }
+  .signoff{ margin-top:12px; font-family:'Caveat', cursive; font-size:1.3rem; color:var(--coral); text-align:right; width:100%; outline:none; }
+  .flip-hint{ margin-top:16px; font-size:.75rem; color:rgba(253,246,236,.55); letter-spacing:1px; }
+  .controls{ margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .burst-heart{ position:fixed; pointer-events:none; font-size:1.4rem; z-index:20; animation:rise 1.6s ease-out forwards; }
+  @keyframes rise{ 0%{transform:translateY(0) scale(.6); opacity:1;} 100%{transform:translateY(-160px) scale(1.3); opacity:0;} }
+
+  /* video modal */
+  .video-modal{
+    position:fixed; inset:0; z-index:30; background:rgba(10,6,20,.92);
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .video-modal.show{ display:flex; }
+  .video-modal video{ width:min(420px,92vw); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.6); }
+  .video-close{ position:absolute; top:24px; right:24px; font-size:1rem; background:none; border:1px solid rgba(253,246,236,.4); color:var(--cream); border-radius:999px; padding:8px 16px; cursor:pointer; }
+
+  @media (prefers-reduced-motion: reduce){ .firefly,.charm,.card,.heart-btn{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<div class="app">
+
+  <section class="scene active" id="scene-welcome">
+    <div class="eyebrow">a small site, made just for you</div>
+    <h1 class="headline">Thamizh,<br>this one's for you</h1>
+    <p class="sub">Before you get to it, walk through it with me. A few little steps, then it's all yours.</p>
+    <button class="btn" onclick="redirectTo('meter')">Begin →</button>
+    <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  </section>
+
+  <section class="scene" id="scene-meter">
+    <div class="eyebrow">step one</div>
+    <h1 class="headline">Fill the warmth meter</h1>
+    <p class="sub">Tap the heart until it's completely full — that's about how much you mean to me.</p>
+    <div class="heart-btn" id="heartBtn" onclick="pumpHeart()">💗</div>
+    <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+    <div class="meter-label" id="meterLabel">0% full</div>
+    <button class="btn" id="meterNext" disabled onclick="redirectTo('years')">Continue →</button>
+    <div class="dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+  </section>
+
+  <section class="scene" id="scene-years">
+    <div class="eyebrow">step two</div>
+    <h1 class="headline">Through the years</h1>
+    <p class="sub">Same smile, every single time.</p>
+    <div class="years-strip">
+      <div class="years-card"><img src="assets/photo-child.jpg" alt="Thamizh as a child"><span>little Thamizh</span></div>
+      <div class="years-card"><img src="assets/photo-teen.jpg" alt="Thamizh growing up"><span>growing up</span></div>
+      <div class="years-card"><img src="assets/photo-now.jpg" alt="Thamizh now"><span>now</span></div>
+    </div>
+    <button class="btn" onclick="redirectTo('chips')">Continue →</button>
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+  </section>
+
+  <section class="scene" id="scene-chips">
+    <div class="eyebrow">step three</div>
+    <h1 class="headline">What makes you, you?</h1>
+    <p class="sub">Pick at least two. These will quietly shape the message waiting for you.</p>
+    <div class="chips" id="chipsWrap">
+      <span class="chip" data-v="your smile">your smile</span>
+      <span class="chip" data-v="how you listen">how you listen</span>
+      <span class="chip" data-v="your laugh">your laugh</span>
+      <span class="chip" data-v="how honest you are">how honest you are</span>
+      <span class="chip" data-v="how safe I feel with you">how safe I feel with you</span>
+      <span class="chip" data-v="you just get me">you just get me</span>
+    </div>
+    <button class="btn" id="chipsNext" disabled onclick="redirectTo('card')">Reveal it →</button>
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+  </section>
+
+  <section class="scene" id="scene-card">
+    <h1 class="headline">Happy Friendship Day, Thamizh</h1>
+    <p class="sub" style="margin-bottom:16px;">and every day, honestly</p>
+
+    <div class="card-wrap" id="cardWrap">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="tape"></div>
+          <div class="polaroid">
+            <div class="photo-frame"><img src="assets/photo-now.jpg" alt="Thamizh"></div>
+            <div class="caption">you, always</div>
+            <span class="charm">🎀</span>
+          </div>
+        </div>
+        <div class="face back">
+          <p class="msg-title">To Thamizh,</p>
+          <div class="message" contenteditable="true" spellcheck="false" id="messageText">I've watched you grow from that laughing little girl in the photos to the woman standing in front of me now, and somehow you've only gotten more you — more warm, more honest, more impossible not to love. You didn't just become my favorite person, you became my home. Every ordinary day feels lighter because you're in it. So today isn't really about friendship, Thamizh — it's about you, and how grateful I am that out of everyone, it's you I get to love.</div>
+          <div class="signoff" contenteditable="true" spellcheck="false" id="signoff">— yours, always</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="flip-hint">tap the card to flip ✨</p>
+    <div class="controls">
+      <button class="btn" onclick="openVideo()">Watch my surprise 🎥</button>
+      <button class="btn ghost" id="flipBtn">Flip card</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="redirect" id="redirectOverlay">
+  <div class="spinner"></div>
+  <div class="url" id="redirectUrl">for-thamizh.com/loading…</div>
+  <div class="redirect-text" id="redirectText">taking you there…</div>
+</div>
+
+<div class="video-modal" id="videoModal">
+  <button class="video-close" onclick="closeVideo()">Close ✕</button>
+  <video id="surpriseVideo" src="assets/surprise.mp4" controls playsinline></video>
+</div>
+
+<script>
+  var sky = document.getElementById('sky');
+  for (var i = 0; i < 26; i++){
+    var f = document.createElement('div');
+    f.className = 'firefly';
+    f.style.left = Math.random() * 100 + 'vw';
+    f.style.bottom = (Math.random() * 20 - 10) + 'vh';
+    f.style.animationDuration = (6 + Math.random() * 8) + 's';
+    f.style.animationDelay = (Math.random() * 8) + 's';
+    sky.appendChild(f);
+  }
+
+  var scenes = ['welcome', 'meter', 'years', 'chips', 'card'];
+  var urlNames = { welcome: '/', meter: '/warmth', years: '/through-the-years', chips: '/what-makes-you-you', card: '/happy-friendship-day' };
+  var redirectTexts = { meter: 'warming things up…', years: 'flipping through old photos…', chips: 'gathering your reasons…', card: 'unlocking your card…' };
+
+  function goTo(id){
+    for (var s = 0; s < scenes.length; s++){
+      document.getElementById('scene-' + scenes[s]).classList.remove('active');
+    }
+    document.getElementById('scene-' + id).classList.add('active');
+    try {
+      history.pushState({}, '', '#' + (urlNames[id].replace('/', '') || ''));
+    } catch (err) {
+      // sandboxed previews may block this — safe to ignore
+    }
+  }
+
+  function redirectTo(id){
+    var overlay = document.getElementById('redirectOverlay');
+    document.getElementById('redirectUrl').textContent = 'for-thamizh.com' + urlNames[id];
+    document.getElementById('redirectText').textContent = redirectTexts[id] || 'redirecting…';
+    overlay.classList.add('show');
+    setTimeout(function(){
+      goTo(id);
+      overlay.classList.remove('show');
+    }, 1100);
+  }
+
+  var meterVal = 0;
+  function pumpHeart(){
+    meterVal = Math.min(100, meterVal + 9);
+    document.getElementById('meterFill').style.width = meterVal + '%';
+    document.getElementById('meterLabel').textContent = meterVal + '% full';
+    var heart = document.getElementById('heartBtn');
+    heart.style.transform = 'scale(1.25)';
+    setTimeout(function(){ heart.style.transform = ''; }, 120);
+    if (meterVal >= 100){
+      document.getElementById('meterNext').disabled = false;
+      document.getElementById('meterLabel').textContent = 'completely full 💛';
+    }
+  }
+
+  var chipEls = document.querySelectorAll('.chip');
+  var picked = 0;
+  chipEls.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chip.classList.toggle('picked');
+      picked = document.querySelectorAll('.chip.picked').length;
+      document.getElementById('chipsNext').disabled = picked < 2;
+    });
+  });
+
+  var cardWrap = document.getElementById('cardWrap');
+  var card = document.getElementById('card');
+  var flipBtn = document.getElementById('flipBtn');
+  var flipped = false, burstDone = false;
+
+  function toggleFlip(){
+    flipped = !flipped;
+    card.classList.toggle('flipped', flipped);
+    if (flipped && !burstDone){ burstDone = true; heartBurst(); }
+  }
+  cardWrap.addEventListener('click', function(e){
+    if (e.target.closest('.message') || e.target.closest('.signoff')) return;
+    toggleFlip();
+  });
+  flipBtn.addEventListener('click', toggleFlip);
+
+  cardWrap.addEventListener('mousemove', function(e){
+    var r = cardWrap.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - 0.5;
+    var y = (e.clientY - r.top) / r.height - 0.5;
+    cardWrap.style.transform = 'rotateY(' + (x * 14) + 'deg) rotateX(' + (-y * 14) + 'deg)';
+  });
+  cardWrap.addEventListener('mouseleave', function(){
+    cardWrap.style.transform = 'rotateY(0deg) rotateX(0deg)';
+  });
+
+  function heartBurst(){
+    var hearts = ['💛', '💕', '✨', '💫'];
+    var r = cardWrap.getBoundingClientRect();
+    for (var i = 0; i < 16; i++){
+      var h = document.createElement('div');
+      h.className = 'burst-heart';
+      h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      h.style.left = (r.left + r.width / 2 + (Math.random() * 160 - 80)) + 'px';
+      h.style.top = (r.top + r.height / 2) + 'px';
+      h.style.animationDelay = (Math.random() * 0.3) + 's';
+      document.body.appendChild(h);
+      (function(el){ setTimeout(function(){ el.remove(); }, 2000); })(h);
+    }
+  }
+
+  function openVideo(){
+    document.getElementById('videoModal').classList.add('show');
+  }
+  function closeVideo(){
+    var v = document.getElementById('surpriseVideo');
+    v.pause();
+    document.getElementById('videoModal').classList.remove('show');
+  }
+</script>
+
+</body>
+</html>
